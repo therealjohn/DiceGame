@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IScoreRule
 {
-    int GetScore(Dice[] dice, int bet);
+    ScoreResult GetScoreResult(int[] diceRollValues);
 }

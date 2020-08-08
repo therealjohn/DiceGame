@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -12,113 +14,109 @@ namespace Tests
         public void triple_one_lose_triple_bet()
         {
             var rule = new TripleOneLoseTripleBet();
-            var dice = new Dice[3]
-            {
-                new Dice() { sideValue = 1},
-                new Dice() { sideValue = 1},
-                new Dice() { sideValue = 1},
-            };
+            var diceRollValues = new int[3] { 1, 1, 1 };
 
-            var score = rule.GetScore(dice, 100);
+            var result = rule.GetScoreResult(diceRollValues);
 
-            Assert.AreEqual(-300, score);
+            Assert.AreEqual(false, result.IsFault);
+            Assert.AreEqual(-3, result.Multiplier);
+            Assert.AreEqual(0, result.Score);
         }
 
         [Test]
         public void one_two_three_lose_double_bet()
         {
             var rule = new OneTwoThreeLoseDoubleBet();
-            var dice = new Dice[3]
-            {
-                new Dice() { sideValue = 1},
-                new Dice() { sideValue = 2},
-                new Dice() { sideValue = 3},
-            };
+            var diceRollValues = new int[3] { 1, 2, 3 };
 
-            var score = rule.GetScore(dice, 100);
+            var result = rule.GetScoreResult(diceRollValues);
 
-            Assert.AreEqual(-200, score);
+            Assert.AreEqual(false, result.IsFault);
+            Assert.AreEqual(-2, result.Multiplier);
+            Assert.AreEqual(0, result.Score);
         }
 
         [Test]
         public void triple_match_wins_triple_bet()
         {
             var rule = new TripleMatchWinTripleBet();
-            var dice = new Dice[3]
-            {
-                new Dice() { sideValue = 6},
-                new Dice() { sideValue = 6},
-                new Dice() { sideValue = 6},
-            };
+            var diceRollValues = new int[3] { 6, 6, 6 };
 
-            var score = rule.GetScore(dice, 100);
+            var result = rule.GetScoreResult(diceRollValues);
 
-            Assert.AreEqual(300, score);
+            Assert.AreEqual(false, result.IsFault);
+            Assert.AreEqual(3, result.Multiplier);
+            Assert.AreEqual(0, result.Score);
         }
 
-        [Test]
-        public void four_five_six_win_double_bet()
+        [TestCase(4, 5, 6)]
+        [TestCase(4, 6, 5)]
+        [TestCase(5, 4, 6)]
+        [TestCase(5, 6, 4)]
+        [TestCase(6, 5, 4)]
+        [TestCase(6, 4, 5)]
+        public void four_five_six_win_double_bet(int dice1, int dice2, int dice3)
         {
             var rule = new FourFiveSixWinDoubleBet();
-            var dice = new Dice[3]
-            {
-                new Dice() { sideValue = 4},
-                new Dice() { sideValue = 5},
-                new Dice() { sideValue = 6},
-            };
+            var diceRollValues = new int[3] { dice1, dice2, dice3 };
 
-            var score = rule.GetScore(dice, 100);
+            var result = rule.GetScoreResult(diceRollValues);
 
-            Assert.AreEqual(200, score);
+            Assert.AreEqual(false, result.IsFault);
+            Assert.AreEqual(2, result.Multiplier);
+            Assert.AreEqual(0, result.Score);
         }
 
         [Test]
         public void atleast_two_match_win_bet()
         {
             var rule = new AtleastTwoDiceMatchWinBet();
-            var dice = new Dice[3]
+            var permutations = GetKCombsWithRept(new int[6] { 1, 2, 3, 4, 5, 6 }, 3);           
+
+            foreach (var p in permutations)
             {
-                new Dice() { sideValue = 2},
-                new Dice() { sideValue = 2},
-                new Dice() { sideValue = 1},
-            };
+                int[] diceValues = p.ToArray();
+                int expectedScore = 0;
+                for (int i = 1; i <= 6; i++)
+                {
+                    if (diceValues.Count(x => x == i) == 2)
+                    {
+                        expectedScore = i;
+                        break;
+                    }
+                }
 
-            var score = rule.GetScore(dice, 100);
+                if (expectedScore > 0)
+                {
+                    var result = rule.GetScoreResult(diceValues);
 
-            Assert.AreEqual(100, score);
+                    Assert.AreEqual(false, result.IsFault);
+                    Assert.AreEqual(1, result.Multiplier);
+                    Assert.AreEqual(expectedScore, result.Score);
+                }
+            }
         }
 
         [Test]
         public void all_different_no_win()
         {
             var validator = new ScoreRuleValidator();
-            var dice = new Dice[3]
-            {
-                new Dice() { sideValue = 1},
-                new Dice() { sideValue = 5},
-                new Dice() { sideValue = 4},
-            };
+            var diceRollValues = new int[3] { 1, 4, 5 };
 
-            var score = validator.Validate(dice, 100);
+            var result = validator.Validate(diceRollValues);
 
-            Assert.AreEqual(0, score);
+            Assert.AreEqual(true, result.IsFault);
+            Assert.AreEqual(0, result.Multiplier);
+            Assert.AreEqual(0, result.Score);
         }
 
-        //// A Test behaves as an ordinary method
-        //[Test]
-        //public void ScoreValidatorTestsSimplePasses()
-        //{
-        //    // Use the Assert class to test conditions
-        //}
-
-        //// A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
-        //// `yield return null;` to skip a frame.
-        //[UnityTest]
-        //public IEnumerator ScoreValidatorTestsWithEnumeratorPasses()
-        //{
-        //    // Use the Assert class to test conditions.
-        //    // Use yield to skip a frame.
-        //    yield return null;
-        //}
+        static IEnumerable<IEnumerable<T>>
+    GetKCombsWithRept<T>(IEnumerable<T> list, int length) where T : IComparable
+        {
+            if (length == 1) return list.Select(t => new T[] { t });
+            return GetKCombsWithRept(list, length - 1)
+                .SelectMany(t => list.Where(o => o.CompareTo(t.Last()) >= 0),
+                    (t1, t2) => t1.Concat(new T[] { t2 }));
+        }
     }
 }

@@ -15,23 +15,30 @@ public class ScoreRuleValidator
         Add(nameof(AtleastTwoDiceMatchWinBet), new AtleastTwoDiceMatchWinBet());
     }
 
-    public int Validate(Dice[] dice, int bet)
+    public ScoreResult Validate(int[] diceRollValues)
     {
-        int score = bet;
+        var result = new ScoreResult();
 
         foreach(var rule in scoreRules)
         {
-            score = rule.Value.GetScore(dice, bet);
+            result = rule.Value.GetScoreResult(diceRollValues);
 
-            if (score != bet)
+            if (result.IsFault || result.Multiplier > 0 || result.Score > 0)
                 break;
         }
 
-        return score;
+        return result;
     }
 
     private void Add(string ruleName, IScoreRule scoreRule)
     {
         scoreRules.Add(ruleName, scoreRule);
     }
+}
+
+public class ScoreResult
+{
+    public bool IsFault { get; set; }
+    public int Multiplier { get; set; } = 0;
+    public int Score { get; set; } = 0;
 }

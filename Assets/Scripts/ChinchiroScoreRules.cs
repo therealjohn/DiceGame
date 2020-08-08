@@ -5,39 +5,44 @@ using UnityEngine;
 
 public class AtleastTwoDiceMatchWinBet : IScoreRule
 {   
-    public int GetScore(Dice[] dice, int bet)
+    public ScoreResult GetScoreResult(int[] diceRollValues)
     {
-        int score = bet;
+        var result = new ScoreResult
+        {
+            IsFault = true
+        };
 
         for (int i = 1; i <= 6; i++)
         {
-            if (dice.Count(x => x.sideValue == i) >= 2)
+            if (diceRollValues.Count(x => x == i) >= 2)
             {
-                score = i;
+                result.Score = i;
+                result.Multiplier = 1;
+                result.IsFault = false;
                 break;
             }
         }
 
-        return score;
+        return result;
     }
 }
 
 public class TripleMatchWinTripleBet : IScoreRule
 {   
-    public int GetScore(Dice[] dice, int bet)
+    public ScoreResult GetScoreResult(int[] diceRollValues)
     {
-        int score = bet;
+        var result = new ScoreResult();
 
         for (int i = 1; i <= 6; i++)
         {
-            if (dice.Count(x => x.sideValue == i) == 3)
+            if (diceRollValues.Count(x => x == i) == 3)
             {
-                score = i;
+                result.Multiplier = 3;
                 break;
             }
         }
 
-        return score;
+        return result;
     }
 }
 
@@ -45,14 +50,14 @@ public class TripleOneLoseTripleBet : IScoreRule
 {
     int[] win = new int[3] { 1, 1, 1 };
 
-    public int GetScore(Dice[] dice, int bet)
+    public ScoreResult GetScoreResult(int[] diceRollValues)
     {
-        int[] values = dice.Select(x => x.sideValue).ToArray();
+        var result = new ScoreResult();
 
-        if (values.All(x => win.Contains(x)))
-            return -bet * 3;
+        if (diceRollValues.All(x => win.Contains(x)))
+            result.Multiplier = -3;
 
-        return bet;
+        return result;
     }
 }
 
@@ -60,14 +65,14 @@ public class OneTwoThreeLoseDoubleBet : IScoreRule
 {
     int[] win = new int[3] { 1, 2, 3 };
 
-    public int GetScore(Dice[] dice, int bet)
+    public ScoreResult GetScoreResult(int[] diceRollValues)
     {
-        int[] values = dice.Select(x => x.sideValue).ToArray();
+        var result = new ScoreResult();
 
-        if (values.All(x => win.Contains(x)))
-            return -bet * 2;
+        if (diceRollValues.All(x => win.Contains(x)))
+            result.Multiplier = -2;
 
-        return bet;
+        return result;
     }
 }
 
@@ -75,13 +80,13 @@ public class FourFiveSixWinDoubleBet : IScoreRule
 {
     int[] win = new int[3] { 4, 5, 6 };
 
-    public int GetScore(Dice[] dice, int bet)
+    public ScoreResult GetScoreResult(int[] diceRollValues)
     {
-        int[] values = dice.Select(x => x.sideValue).ToArray();
+        var result = new ScoreResult();
 
-        if (values.All(x => win.Contains(x)))
-            return bet * 2;
+        if (diceRollValues.All(x => win.Contains(x)))
+            result.Multiplier = 2;
 
-        return bet;
+        return result;
     }
 }

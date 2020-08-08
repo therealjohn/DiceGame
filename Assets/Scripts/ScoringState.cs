@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ScoringState : GameState
@@ -23,8 +24,9 @@ public class ScoringState : GameState
 
     private void CheckWinConditions(Dice[] dice, int bet)
     {
-        int score = new ScoreRuleValidator().Validate(dice, bet);
+        var diceRollValues = dice.Select(x => x.sideValue).ToArray();
+        var result = new ScoreRuleValidator().Validate(diceRollValues);
 
-        Debug.Log($"Rolled score {score}");
+        Debug.Log($"Roll result\nFault: {result.IsFault}\nScore: {result.Score}\nMultiplier: {result.Multiplier}");
     }
 }
