@@ -19,6 +19,9 @@ public class ScoringState : GameState
 
         CheckWinConditions(dice, GameManager.PlayerBetAmount);
 
+        Debug.Log("Player turn finished. Resetting.");
+
+        GameManager.IsPlayerRolling = false;
         GameManager.SetState(new GameStartState(GameManager));
     }
 

@@ -8,7 +8,6 @@ using UnityEngine.UI;
 public class GameManager : StateManager
 {
     [SerializeField] private Player player;
-    [SerializeField] private ChinchiroGame gameSystem;
 
     [Header("Opponents")]
     [SerializeField] private Opponent[] opponents;
@@ -19,13 +18,25 @@ public class GameManager : StateManager
     [Header("UI")]
     [SerializeField] private Text scoreText;
 
+    [Header("Camera")]
+    [SerializeField] private new Camera camera;
+    [SerializeField] private float startingSize;
+    [SerializeField] private float zoomSize;
+    [SerializeField] private float zoomSpeed = 1f;
+
     private int currentFaults, currentOpponentIndex;
     private Opponent currentOpponent;
-    private int playerBetAmount = 100;
+    private int playerBetAmount = 100;  
 
     public Dice[] Dice => dice;
     public int PlayerBetAmount => playerBetAmount;
     public bool IsPlayerRolling { get; set; }
+
+    private void Awake()
+    {
+        camera = Camera.main;
+        camera.orthographicSize = startingSize;
+    }
 
     private void Start()
     {
@@ -53,6 +64,24 @@ public class GameManager : StateManager
         foreach (Dice d in dice)
         {
             d.Reset();
+        }
+    }
+
+    public IEnumerator ZoomInOnDice()
+    {
+        while (Math.Abs(camera.orthographicSize - zoomSize) > 0.1f)
+        {
+            camera.orthographicSize = Mathf.Lerp(camera.orthographicSize, zoomSize, Time.deltaTime * zoomSpeed);
+            yield return null;
+        }
+    }
+
+    public IEnumerator ResetCamera()
+    {
+        while (Math.Abs(camera.orthographicSize - startingSize) > 0.1f)
+        {
+            camera.orthographicSize = Mathf.Lerp(camera.orthographicSize, startingSize, Time.deltaTime * zoomSpeed);
+            yield return null;
         }
     }
 

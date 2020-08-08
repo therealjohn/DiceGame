@@ -5,6 +5,7 @@ using UnityEngine;
 public class ValidateRollState : GameState
 {
     Dice[] dice;
+    bool needsReroll;
 
     public ValidateRollState(GameManager gameManager) 
         : base(gameManager)
@@ -18,7 +19,11 @@ public class ValidateRollState : GameState
 
     public override void Update()
     {
-        if(AllDiceDoneRolling())
+        if(needsReroll)
+        {
+            GameManager.SetState(new PlayerTurnState(GameManager));
+        }
+        else if(AllDiceDoneRolling())
         {
             GameManager.SetState(new ScoringState(GameManager));
         }
@@ -30,7 +35,8 @@ public class ValidateRollState : GameState
         {
             if(d.IsDoneRolling)
             {
-                d.canRoll = CheckIfNeedsRerolled(d);
+                needsReroll = CheckIfNeedsRerolled(d);
+                d.canRoll = needsReroll;
             }
 
             if (!d.IsDoneRolling)

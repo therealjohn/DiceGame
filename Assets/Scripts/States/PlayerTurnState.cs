@@ -13,7 +13,7 @@ public class PlayerTurnState : GameState
 
     public override void Start()
     {
-        Debug.Log("Player turn begin.");        
+        Debug.Log("Player turn begin.");
     }
 
     public override void Update()
@@ -24,6 +24,7 @@ public class PlayerTurnState : GameState
 
             GameManager.IsPlayerRolling = true;
             GameManager.RollDice();
+            GameManager.StartCoroutine(GameManager.ZoomInOnDice());
             GameManager.SetState(new ValidateRollState(GameManager));
         }
     }
