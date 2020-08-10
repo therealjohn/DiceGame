@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class DialogueManager : MonoBehaviour
 {
-    public Text dialogueText;
+    public TMPro.TextMeshProUGUI dialogueText;
 
     private Queue<string> sentences = new Queue<string>();
 

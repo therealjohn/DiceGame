@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class GameManager : StateManager
 {
     [SerializeField] private Player player;
+    [SerializeField] private DialogueManager dialogueManager;
 
     [Header("Opponents")]
     [SerializeField] private Opponent[] opponents;
@@ -40,7 +41,7 @@ public class GameManager : StateManager
 
     private void Start()
     {
-        SetState(new GameStartState(this));
+        SetState(new GameStartState(this));        
     }
 
     private void Update()
